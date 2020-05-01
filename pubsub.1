@@ -1,0 +1,78 @@
+.TH pubsub 1 "2020 Galois, Inc."
+.SH NAME
+pubsub \- publish/subscribe message bus
+.SH SYNOPSIS
+.BI pubsub " [-l] NAME INTERFACE PORT TOPIC..."
+.SH DESCRIPTION
+.BR pubsub (1)
+is a networked client for publish/subscribe messaging in which each message is
+represented as a single line of text.
+.BR pubsub (1)
+subscribes to topics listed as arguments.
+.PP
+Unless the
+.B -l
+("listen-only") option is provided,
+.BR pubsub (1)
+reads lines of text from standard input.
+Text arriving via standard input is parsed as a topic name followed by message
+text.
+The topic name is separated from the message text by space(s) or tab(s).
+The message text must end with a newline and must not contain embedded newline
+or NUL characters.
+.PP
+Messages published to a topic are received by subscribed clients and written
+to standard output.
+The subscriber must exist at the time a message is published.
+Messages sent to a nonexistent subscriber disappear into the void.
+Received messages are prefixed with the sender's identity and topic, each
+separated by a tab character.
+The identity presents as
+.IR NAME [ UUID ],
+where
+.I NAME
+is the sender's given name and
+.I UUID
+is the first seven characters of the hexadecimal representation of the
+sender's UUID.
+The name is not guaranteed to be unique.
+.PP
+Errors are logged to standard error.
+.SH OPTIONS
+.I NAME
+should be unique.
+This will appear in the output to identify the sender.
+The name must be composed of the characters a-zA-Z0-9._+-/ .
+.PP
+.I INTERFACE
+is the name of the network interface over which
+.BR pubsub (1)
+traffic will flow.
+The interface must allow broadcast addressing.
+If passed as the empty string (''), the host's first broadcast-capable
+interface is used.
+.PP
+.I PORT
+is the number of the unprivileged port used for peer discovery traffic.
+Be certain that your firewall allows UDP traffic on this port.
+For example:
+.RS
+$ sudo firewall-cmd --add-port=5670/udp
+.RE
+.PP
+.IR TOPIC ...
+is a list of topic names for which
+.BR pubsub (1)
+will receive published messages.
+Each topic name must be composed of the characters a-zA-Z0-9._+-/ .
+.SH OTHER
+.BR pubsub (1)
+terminates upon receipt of SIGTERM or when invoked without the
+.B -l
+option and standard input reaches EOF.
+.PP
+Each
+.IR PORT / INTERFACE
+pair (where the interace is a proxy for its subnet) defines an endpoint
+on a distinct message bus.
+This endpoint interacts only with endpoints using the same port and subnet.

@@ -1,0 +1,5 @@
+/libmsgbus.*
+/*.o
+/test
+/pubsub
+/result

@@ -1,0 +1,77 @@
+.TH msgbus 3 "2020 Galois, Inc."
+.SH NAME
+msgbus \- ZRE publish/subscribe message bus
+.SH SYNOPSIS
+#include <msgbus.h>
+.PP
+Link with -lmsgbus -lzyre -lczmq -lzmq .
+
+typedef void (*msgbus_callback_t)(const char *name, const char *type, \
+const char *peer, const char *topic, void *userptr, const char *msg_text);
+
+zactor_t *msgbus_open(int port, const char *name, const char *interface, \
+const char *topics[], msgbus_callback_t callback, void *userptr);
+
+int msgbus_publish(zactor_t *handle, const char *topic, const char *message);
+
+int msgbus_close(zactor_t **handle);
+.SH DESCRIPTION
+This API implements a publish/subscribe message bus which allows
+programs having connections to a shared subnet to exchange messages by topic.
+.PP
+Establish a bus connection using
+.IR msgbus_open() .
+The port must be capable of passing UDP traffic.
+This is used for peer discovery.
+Port 5670 is registered with IANA for this purpose.
+The range of privileged port numbers (0..1023) is disallowed.
+The name is passed to subscribers as the peer name.
+The interface is the name of the network interface over which both
+discovery and message traffic flows.
+Each port/interface pair (really: port/subnet) defines an endpoint on
+a distinct message bus.
+If specified as NULL, the library will pick an interface which supports
+broadcast addressing; this should be used only on hosts for which this
+choice will ensure that the proper subnet is used.
+(IOW, if the host has interfaces on different subnets, you should name
+the desired interface.)
+The list of topics is a NULL-terminated array.
+The callback is the handler called for received messages.
+The userptr is passed through to the callback for client tagging/use.
+.I msgbus_open()
+returns a handle to pass to msgbus_publish() and msgbus_close().
+.PP
+If your
+.BR msgbus (3)
+client handles signals (as is the case with virtually all canonical C
+programs unless you arrange otherwise), you should call
+.IR zsys_handler_set(NULL) .
+.PP
+.BR IMPORTANT :
+The bus is NOT immediately usable upon return from
+.IR msgbus_open() .
+Impose a short delay (e.g.
+.IR zclock_sleep(100) )
+before publishing the first message.
+.PP
+Messages published to a given topic arrive at all clients which subscribe to
+that topic.
+A client never receives its own messages, even if subscribed to the topic.
+The client receives messages via the
+.I msgbus_callback_t
+function.
+An arriving message has type
+.IR SHOUT ;
+other types correspond to administrative messages.
+.PP
+Publish a message to a topic using the
+.I msgbus_publish()
+function.
+Messages published to a nonexistent subscriber are lost without notice.
+.PP
+When finished with the bus, call
+.IR msgbus_close() .
+.SH RETURN VALUES
+Except for
+.IR msgbus_open() ,
+which returns a handle, these functions return 0 on success.
