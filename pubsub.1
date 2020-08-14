@@ -3,6 +3,8 @@
 pubsub \- publish/subscribe message bus
 .SH SYNOPSIS
 .BI pubsub " [-l] NAME INTERFACE PORT TOPIC..."
+.br
+.BI pubsub " -s NAME INTERFACE PORT"
 .SH DESCRIPTION
 .BR pubsub (1)
 is a networked client for publish/subscribe messaging in which each message is
@@ -38,6 +40,12 @@ sender's UUID.
 The name is not guaranteed to be unique.
 .PP
 Errors are logged to standard error.
+.PP
+If invoked with the
+.B -s
+("send-only") option,
+.BR pubsub (1)
+does not subscribe to any topic.
 .SH OPTIONS
 .I NAME
 should be unique.

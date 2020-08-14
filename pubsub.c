@@ -64,17 +64,22 @@ static int read_pubmsg(const char **pub_topic, const char **pub_text) {
 }
 
 int main(int argc, char *argv[]) {
-	int subonly = 0;
-	if ((argc > 1 && (subonly = !strcmp(argv[1], "-l")) && argc < 6) || argc < 5) {
-		fprintf(stderr, "usage: %s [-l] NAME INTERFACE PORT TOPIC...\n",
-								argv[0]);
+	int subonly = argc > 1 && !strcmp(argv[1], "-l");
+	int pubonly = argc > 1 && !strcmp(argv[1], "-s");
+	if ((subonly && argc < 6) || argc < 5) {
+		fprintf(stderr,
+			"usage:\t%s [-l] NAME INTERFACE PORT TOPIC...\n"
+			"\t%s -s NAME INTERFACE PORT\n"
+			"\n"
+			"If INTERFACE is '', use the first available"
+			" broadcast-capable port.\n", argv[0], argv[0]);
 		return 1;
 	}
 	const char *vcs =
 		"abcdefghijklmnopqrstuvwxyz"
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		"01234567890._+-/";
-	if (subonly) ++argv;
+	if (subonly || pubonly) ++argv;
 	if (strlen(argv[1]) == 0 || strspn(argv[1], vcs) != strlen(argv[1])) {
 		fprintf(stderr, "%s:%s:name?\n", argv[0], argv[1]);
 		return 1;
