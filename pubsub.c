@@ -66,7 +66,7 @@ static int read_pubmsg(const char **pub_topic, const char **pub_text) {
 int main(int argc, char *argv[]) {
 	int subonly = argc > 1 && !strcmp(argv[1], "-l");
 	int pubonly = argc > 1 && !strcmp(argv[1], "-s");
-	if ((subonly && argc < 6) || argc < 5) {
+	if ((subonly && argc < 6) || (pubonly && argc !=5) || argc < 5) {
 		fprintf(stderr,
 			"usage:\t%s [-l] NAME INTERFACE PORT TOPIC...\n"
 			"\t%s -s NAME INTERFACE PORT\n"
